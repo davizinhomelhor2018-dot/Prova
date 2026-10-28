@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Regras de RP – Busca rápida</title>
+<style>
+:root{--bg:#f3f5f7;--surf:#fff;--tx:#14202b;--mu:#5a6b7a;--bd:#d5dce3;--ac:#0b6e8a;--pen:#fdeaea;--pent:#8a1c1c;--hl:#ffe36b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1519;--surf:#182229;--tx:#e8eef2;--mu:#9bacb8;--bd:#2b3a44;--ac:#5cc4e0;--pen:#3a1d1f;--pent:#ffb3b3;--hl:#7a6500}}
+:root[data-theme="dark"]{--bg:#0f1519;--surf:#182229;--tx:#e8eef2;--mu:#9bacb8;--bd:#2b3a44;--ac:#5cc4e0;--pen:#3a1d1f;--pent:#ffb3b3;--hl:#7a6500}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:17px/1.5 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+header{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding:12px 16px;border-bottom:1px solid var(--bd);z-index:5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+h1{font-size:1.1rem;margin:0 0 8px}
+.row{display:flex;gap:8px}
+input{flex:1;font:inherit;padding:12px 14px;border:2px solid var(--bd);border-radius:10px;background:var(--surf);color:var(--tx)}
+input:focus{outline:none;border-color:var(--ac)}
+button{font:inherit;padding:0 14px;border:1px solid var(--bd);border-radius:10px;background:var(--surf);color:var(--tx);cursor:pointer}
+.info{font-size:.85rem;color:var(--mu);margin-top:6px}
+main{max-width:820px;margin:0 auto;padding:14px 16px 40px;display:grid;gap:12px}
+article{background:var(--surf);border:1px solid var(--bd);border-radius:10px;padding:14px 16px}
+article.sub{margin-left:18px;border-left:4px solid var(--ac)}
+h2{font-size:1.05rem;margin:0 0 6px;color:var(--ac)}
+h2 small{color:var(--mu);font-weight:400;font-size:.85rem}
+p{margin:6px 0}
+.pen{background:var(--pen);color:var(--pent);padding:8px 10px;border-radius:8px;margin-top:8px;font-size:.95rem}
+mark{background:var(--hl);color:inherit;border-radius:3px;padding:0 1px}
+.none{text-align:center;color:var(--mu);padding:30px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{padding:6px 12px;border-radius:20px;font-size:.9rem}
+.chip.on{background:var(--ac);color:var(--bg);border-color:var(--ac)}
+h3{font-size:1rem;margin:8px 0 0}
+.note{font-size:.9rem;color:var(--mu);margin:0}
+.zoom{margin-left:auto;padding:6px 12px;border-radius:20px;font-size:.9rem}
+ul{margin:6px 0;padding-left:20px}
+li{margin:3px 0}
+</style>
+</head>
+<body>
+<header>
+<h1>Regras do servidor – busca rápida</h1>
+<div class="row"><input id="q" type="search" placeholder="Digite qualquer palavra: dm, taser, carro, banido…" autocomplete="off" aria-label="Buscar regra"><button id="c" type="button">Limpar</button></div>
+<div class="chips"><button type="button" class="chip on" data-s="all">Todas</button><button type="button" class="chip" data-s="jogo">Jogo (RP)</button><button type="button" class="chip" data-s="pol">Polícia</button><button type="button" class="chip" data-s="grave">Mais graves</button><button type="button" class="chip" data-s="conta">Contas</button><button type="button" class="chip" data-s="chat">Chat</button><button type="button" class="chip" data-s="abuso">Infrações graves</button><button type="button" class="chip" data-s="midia">Mídia</button><button type="button" class="chip" data-s="gang">Gangues</button><button type="button" class="zoom" id="z" aria-label="Aumentar letra">A+</button></div>
+<div class="info" id="n"></div>
+</header>
+<main id="list"></main>
+<script>
+var R=[
+["5.1","RP1","DeathMatch (DM)","Causar dano ou matar a um personagem sem motivos de RP.","20 minutos na prisão."],
+["5.2","RP2","DeathMatch Auto (DMAuto)","Causar dano ou destruir a um veículo sem motivos de RP.","20 minutos na prisão."],
+["5.3","RP3","Poder NÃORP (NP)","Uso de capacidades físicas além das características do personagem em caráter de RP.","15 minutos na prisão."],
+["5.4","RP4","Non RolePlay (NRP)","Romper a lógica do RP e das ações do personagem criando situações pouco ou nada realistas.","15 minutos na prisão."],
+["5.5","RP5","Metagaming","Utilizar informações do mundo real que o personagem dentro do jogo não teria como saber.","Silenciamento completo do chat de voz e do canal de chat LOCAL por 30 minutos, ou até 60 minutos na Prisão."],
+["5.6","RP6","Abandono de RP","Qualquer tentativa de desviar do processo de RP para ganho pessoal. Entrar em uma zona verde para escapar de uma perseguição armada e evitar danos também será considerado recusa de RP.","De 30 a 60 minutos na cadeia do ONESTATE, dependendo da reincidência."],
+["5.7","RP7","RP em benefício próprio","Uso desigual do RP em favor próprio utilizando os comandos /do, /me, /try.","20 minutos na prisão."],
+["5.8","RP8","AFK","Quando não há qualquer atividade de um JOGADOR por mais de 5 minutos.","Desconexão do servidor."],
+["5.9","RP9","DriveBy (DB)","Causar dano ou matar um personagem utilizando um veículo.","60 minutos na prisão."],
+["5.9.1","RP9.1","Mass DriveBy (DB)","Causar dano ou matar vários jogadores usando qualquer veículo.","Banimento da conta por 12 horas.",1],
+["5.10","RP10","Repeat Kill (RK)","Matar ou perseguir um jogador após sua morte. Retornar ao local da morte anterior dentro de 15 minutos ou até o final da situação em que o personagem morreu.","90 minutos na cadeia do ONESTATE."],
+["5.11","RP11","Violações em Zonas Verdes","Praticar atividades criminosas em Zonas Verdes ou próximo aos seus limites (incluindo, mas não se limitando a: Hospital, Mercado de Veículos); aguardar jogadores saírem de uma Zona Verde com a intenção de matá-los; praticar atividades criminosas, incluindo tiroteios, em áreas de trabalho.","30 a 60 minutos na Prisão ou 60 minutos de Bloqueio de Ataque."],
+["5.12","RP12","Sequestro NRP","Tentativa de sequestro irrealista. É considerada irrealista qualquer tentativa de sequestro em que o número de sequestrados é maior do que 50% do total de sequestradores. Tentativas de sequestro em mais de 5 jogadores ao mesmo tempo também são consideradas irrealistas.","Prisão por 30 minutos."],
+["5.13","RP13","Faction NRP","Comportamento fora do roleplay dentro das facções do jogo. Inclui liberação ilegal de prisioneiros ou execução de civis por parte da polícia.","Exoneração da facção E/OU de 30 minutos na cadeia do OneState até 3 dias de banimento."],
+["5.14","RP14","Assédio Sexual","Qualquer forma de ação de natureza sexual, incluindo simulações, diálogos ou ações explícitas; o uso de insultos de cunho étnico e/ou contra pessoas LGBTQIA+; perseguir outros JOGADORES ou utilizar descrições verbais excessivamente detalhadas com conotação sexual. Todas as ações de natureza sexual entre JOGADORES devem ser realizadas com o consentimento prévio de todos os participantes. Mesmo com consentimento prévio, essas ações de roleplay não podem ocorrer em áreas públicas ou locais frequentemente visitados por outros JOGADORES (incluindo, mas não se limitando a: prisão, hospital, áreas de trabalho, estacionamentos etc.).","Silenciamento completo do chat de voz e do canal de chat LOCAL por 60 minutos, ou banimento da CONTA de 24 horas a 30 dias."],
+["5.15","RP15","Interrupção das Operações da Polícia e do Exército","Provocar intencionalmente membros da Polícia ou Exército para entretenimento ou perturbar suas operações é proibido.","30 minutos na cadeia do ONESTATE."],
+["5.16","RP16","Atos Criminais Contra Pessoal de Emergência","Qualquer ato criminoso contra o pessoal de emergência médica é proibido.","De 90 minutos na prisão do ONESTATE a 12 horas de banimento."]
+];
+var SN={conta:'4. Contas',chat:'6. Regras do chat e de comunicação',abuso:'7. Infrações graves',midia:'8. Infrações relacionadas ao serviço de mídia',gang:'9. Infrações relacionadas às gangues'};
+var NT={chat:'Todas as regras de OneState são aplicáveis ao chat de comércio. A administração do jogo possui total direito de aplicar as sanções necessárias de acordo com a gravidade das violações.'};
+var PERM='Bloqueio permanente de todas as CONTAS.';
+var Q=[
+['conta','4.1','','Contas de usuário','Contas criadas por JOGADORES para acessar o serviço do projeto ONESTATE (CONTA ou CONTAS).',''],
+['conta','4.2','','Propriedade das contas','As CONTAS registradas nos servidores do ONESTATE são de propriedade intelectual da empresa Chillbase LTD (EMPRESA).',''],
+['conta','4.3','','Direito exclusivo da empresa','A EMPRESA possui o direito exclusivo de todas as CONTAS criadas por JOGADORES nos servidores do ONESTATE.',''],
+['conta','4.4','','Cuidado com golpistas','A ADMINISTRAÇÃO e todos os funcionários da EMPRESA jamais pedirão seus dados pessoais, logins, senhas ou qualquer informação da CONTA, nem enviarão links externos para acesso. TOME CUIDADO COM GOLPISTAS!',''],
+['conta','4.5','','Segurança das contas','A ADMINISTRAÇÃO não é responsável pela segurança de propriedades dentro do jogo ou de contas, nem de propriedades passadas a outros JOGADORES. Não compartilhe os dados de sua CONTA sob nenhuma circunstância!',''],
+['conta','4.6','','Propriedades perdidas','A ADMINISTRAÇÃO não recupera propriedades do jogo perdidas por hacking ou compartilhamento de CONTAS com terceiros, pois essa prática abre premissas para abusos, como já constatado.',''],
+['conta','4.7','AC1','Venda de conta','Vender ou tentar vender uma CONTA em sites de terceiros ou em servidores do ONESTATE.',PERM],
+['conta','4.8','AC2','Transferência de conta','Transferir e/ou tentar transferir o registro de uma CONTA em sites de terceiros ou em um dos servidores do ONESTATE.','Bloqueio permanente da CONTA transferida.'],
+['conta','4.9','AC3','Criar mais de 3 contas','Criação de mais de 3 CONTAS em um mesmo dispositivo.','Bloqueio permanente de todas as CONTAS criadas após a terceira.'],
+['conta','4.10','AC4','Hack de contas','Hackear ou obter acesso não autorizado à CONTA de outro JOGADOR.','Bloqueio permanente da CONTA do infrator e mudança forçada da senha da CONTA hackeada, por verificação por e-mail.'],
+['conta','4.11','AC5','RMT','Vender, anunciar, trocar ou comprar itens e/ou dinheiro do jogo por dinheiro real.','Banimento permanente de todas as contas.'],
+['chat','6.1','CHAT1','Insultar outros jogadores','Insultar jogadores sem qualquer razão válida dentro do RP.','1 dia de banimento.'],
+['chat','6.2','CHAT2','Insultar familiares de um jogador','Insultar e/ou mencionar os familiares de outros JOGADORES em contexto negativo, inclusive de forma indireta ou velada.','Silenciamento completo do chat de voz e de TODOS os canais de chat por 240 minutos, ou banimento da CONTA por até 3 dias.'],
+['chat','6.3','CHAT3','Insultos baseados em religião, política, raça, nacionalidade, gênero ou sexo','Insultar e/ou mencionar nacionalidade, raça, religião, gênero ou sexo de outros JOGADORES em contexto negativo, inclusive de forma indireta ou velada. Inclui insultos e declarações negativas sobre temas sociais e/ou políticos sensíveis que possam gerar conflitos entre jogadores.','Silenciamento completo do chat de voz e de TODOS os canais de chat por 240 minutos, ou banimento da CONTA por 3 dias.'],
+['chat','6.4','CHAT4','Insulto à ADMINISTRAÇÃO','Insultos e linguagem obscena direcionados a qualquer representante da ADMINISTRAÇÃO, inclusive de forma indireta ou velada.','Silenciamento completo do chat de voz e de TODOS os canais de chat por 240 minutos, ou banimento da CONTA por 7 dias.'],
+['chat','6.5','CHAT5','Spam e Flood','Praticar spam e/ou flood em qualquer chat, incluindo mensagens semelhantes com macros, mensagens repetitivas ou sem sentido enviadas por diferentes jogadores etc.','Silenciamento de TODOS os canais de chat por 10 minutos.'],
+['chat','6.6','CHAT6','Abuso do sistema de denúncias/ajuda','Enviar diversas denúncias ou pedidos de ajuda sobre o mesmo problema, fazer flood no sistema de denúncias ou usar os canais de feedback de forma abusiva, inclusive repetindo solicitações após já ter recebido orientação da administração.','Silenciamento de TODOS os canais de chat por 10 a 30 minutos.'],
+['chat','6.7','CHAT7','Publicidade não autorizada','Qualquer publicidade sobre recursos de terceiros sem autorização da ADMINISTRAÇÃO.','Bloqueio da CONTA do infrator por 10 DIAS.'],
+['chat','6.8','CHAT8','Música no chat de voz','Poluir o canal de voz com música ou outros sons externos/desnecessários.','Silenciamento do chat de voz por 60 minutos.'],
+['chat','6.9','CHAT9','Se passar por ADMINISTRAÇÃO ou funcionário da EMPRESA','Se passar por representante da ADMINISTRAÇÃO ou funcionário da EMPRESA visando benefício pessoal, enganar outros JOGADORES e provocar desinformação, difamando a honra e a dignidade dos representantes e funcionários.',PERM],
+['chat','6.10','CHAT10','Enganar jogadores do ONESTATE','Enganar, iludir ou ludibriar os JOGADORES de qualquer forma ou modo.',PERM],
+['chat','6.11','CHAT11','Enganar a ADMINISTRAÇÃO','Enganar qualquer representante de ADMINISTRAÇÃO de qualquer forma ou modo.',PERM],
+['chat','6.12','CHAT12','Difamação','Atentar contra a integridade moral e legal do projeto. Atacar, descreditar e/ou difamar o projeto ou seus membros em público para minar a reputação do projeto.','Bloqueio de todas as contas por até 30 dias.'],
+['chat','6.13','CHAT13','Ameaças OOC','Ameaças à integridade física de alguém na vida real.','Bloqueio da conta por 10 dias.'],
+['chat','6.14','CHAT14','Influência NRP','Provocar terceiros a quebrarem as regras com a intenção de causar o banimento do jogador.','Bloqueio da conta por 12 horas.'],
+['chat','6.15','CHAT15','Comportamento tóxico','Comportamento tóxico ou negativo, incluindo ações, comentários ou atitudes prejudiciais ou hostis, direcionados especificamente a outros jogadores ou administradores.','Banimento da conta de 1 a 3 dias.'],
+['chat','6.16','CHAT16','Uso de idioma não oficial','As conversas no jogo devem ser no idioma regional do servidor. Exceção: conversas dentro de pequenos grupos (5 ou menos), desde que não interfiram no RP de outros jogadores.','Silenciamento completo do chat de voz e de TODOS os canais de chat por 10 a 60 minutos, ou banimento da CONTA por até 12 horas (dependendo das reincidências).'],
+['chat','6.17','CHAT17','Divulgação de informações pessoais','É proibida a divulgação de dados confidenciais, materiais privados ou “doxxing” de outros jogadores.','Banimento permanente de todas as contas vinculadas.'],
+['chat','6.18','TCHAT1','Spam e flood nos canais de comércio e recrutamento','Publicar nos canais de COMÉRCIO ou RECRUTAMENTO mensagens não relacionadas à negociação de itens ou ao recrutamento. Também é proibido repetir as próprias mensagens, inclusive com alterações que não mudem o conteúdo.','Silenciamento dos canais de COMÉRCIO e RECRUTAMENTO por 10 a 60 minutos (dependendo da gravidade).'],
+['chat','6.19','TCHAT2','Informações enganosas','Publicar nos canais de COMÉRCIO e RECRUTAMENTO mensagens sobre itens que não existem no jogo ou que não pertencem ao vendedor, ou informações enganosas sobre recrutamento. Qualquer forma de informação enganosa é proibida.','Silenciamento dos canais de COMÉRCIO e RECRUTAMENTO por 10 minutos.'],
+['abuso','7.1','ABUSE1','Abuso de modificações do jogo','Usar erros, vulnerabilidades ou funcionalidades não intencionais do jogo para obter vantagem ou prejudicar a jogabilidade. Exemplos: atirar através de paredes, comer durante combates, sair do jogo durante cenas de RP ou usar o CARTÃO DE PRISÃO para burlar sanções administrativas.','Banimento da conta de 1 a 30 dias.'],
+['abuso','7.2','ABUSE2','Abuso de AFK','Usar erros, vulnerabilidades, funcionalidades não intencionais e/ou programas de terceiros (clickers, macros) para evitar desconexão por inatividade. Inclui AFK farming, em que o jogador permanece inativo com o jogo aberto.','Banimento da conta por 3 dias.'],
+['abuso','7.3','ABUSE3','Não observância das regras','Violação sistemática e repetida das regras do jogo (referência: 5 ocorrências).','Bloqueio da conta de 3 a 30 dias (dependendo da severidade e reincidência).'],
+['abuso','7.3.1','ABUSE3.1','Violação extrema das regras','Violações repetidas e sistemáticas, com múltiplas infrações do ABUSE3 (referência: 3 violações do ABUSE3), dão ao Gerente da Comunidade autoridade para negar ao jogador o acesso ao jogo após revisão do caso.','Banimento permanente de todas as contas.',1],
+['abuso','7.4','ABUSE4','Interrupção de RP em larga escala','Prejudicar o RP durante atividades em larga escala ou tentar atrapalhar atividades com vários jogadores. Também é proibido impedir intencionalmente a participação em eventos e atividades, abater jogadores em pontos de controle ou interferir no período de espera de uma atividade.','24 horas de banimento da CONTA.'],
+['abuso','7.5','ABUSE5','Bloqueio de pontos relevantes','Interferir intencionalmente nas atividades comuns de outros jogadores. Exemplo: bloquear o acesso a marcadores de trabalho e entradas de edifícios.','De 10 a 60 minutos na cadeia do OneState.'],
+['abuso','7.6','ALERT1','Evasão de banimento','Tentar burlar ou evitar um banimento ou punição.','De banimento de 14 dias de todas as contas até banimento permanente (dependendo da gravidade).'],
+['abuso','7.7','ALERT2','Danificar os servidores do ONESTATE','Qualquer ato ou omissão com intenção de causar danos significativos à economia interna do jogo ou à estabilidade dos servidores do ONESTATE, individualmente ou como um todo.',PERM],
+['abuso','7.8','ALERT3','Uso de software de terceiros (cheats)','Modificar ou tentar modificar os arquivos do ONESTATE, ou usar softwares para modificar dados e valores do projeto e obter vantagens pessoais, causando danos ao projeto e a outros JOGADORES.',PERM],
+['abuso','7.9','ALERT4','Dano à economia do servidor','Transferência de dinheiro ou itens entre JOGADORES, de qualquer forma, que ultrapasse os limites estabelecidos pelo servidor.','Sempre que possível, o valor transferido será removido do jogador sem reembolso total. Se o valor não estiver disponível ou conforme a gravidade, o JOGADOR poderá receber banimento de 30 dias até permanente.'],
+['abuso','7.10','ALERT5','Difamação externa','Tentar ativamente prejudicar a integridade moral e/ou legal do projeto ou de qualquer jogador, voluntário, administrador ou profissional, em canais externos, incluindo todos os discords oficiais do ONESTATE e de outros projetos.','Banimento permanente de todas as contas.'],
+['abuso','7.11','ALERT6','Divulgação de terceiros','Promover, fazer propaganda e/ou mencionar outros jogos, produtos, projetos ou serviços externos é expressamente proibido, exceto com autorização do gerente de comunidade.','Banimento de 1 dia a banimento permanente de todas as contas.'],
+['abuso','7.12','ALERT7','Decisão da Administração Sênior','A administração sênior tem o direito de aplicar punições que não estão especificadas na lista.',''],
+['midia','8.1','MEDIA1','Stream sniping / interferência na filmagem','Assediar um(a) criador(a) de conteúdo durante uma transmissão ao vivo, interferir na filmagem durante gravação ativa ou transmissão ao vivo, e/ou sabotar a filmagem causando atrasos.','Banimento da conta de 1 hora a 24 horas.'],
+['gang','9.1','CLAN1','Nome, cargos e descrição da gangue','O nome, os cargos e a descrição da gangue não podem conter ofensas ou palavras proibidas.','Mudança forçada do nome e descrição da gangue.'],
+['gang','9.2','CLAN2','Bloqueio dos marcadores de entrada do QG','É proibido bloquear o marcador de entrada para os QGs, impossibilitando o acesso de outros jogadores ao QG.','Prisão por 30 minutos.'],
+['gang','9.2.1','CLAN2.1','Bloqueio dos marcadores da sede com veículos','Criar obstáculos que impeçam o uso dos marcadores de entrada/saída da sede da gangue com veículos, incluindo bloquear o acesso aos marcadores.','60 minutos na Prisão.',1],
+['gang','9.2.2','CLAN2.2','Assassinato no marcador da sede da gangue','Cometer assassinato no marcador de entrada/saída da sede da gangue ou atirar a partir da área do marcador.','40 minutos na Prisão ou 40 minutos de Bloqueio de Ataque.',1],
+['gang','9.3','CLAN3','Regras do chat da gangue','Todas as regras de chat do jogo valem para conversas entre membros das gangues.','Bloqueio de texto e voz pelo período referente à violação.'],
+['gang','9.4','CLAN4','Associação a outras gangues durante eventos','Durante os eventos de PvP é proibida a associação entre 2 ou mais gangues.','Prisão por 30 minutos.'],
+['gang','9.5','CLAN5','Uso do Taser da gangue','Usar o Taser da Gangue mais de duas vezes em outro JOGADOR dentro de uma única situação RP sem motivo RP.','30 minutos na Prisão ou 30 minutos de Bloqueio de Ataque.'],
+['gang','9.5.1','CLAN5.1','Taser da gangue em membros de corporação','Usar o Taser da Gangue em JOGADOR de qualquer corporação, inclusive para removê-lo de um veículo de serviço, sem motivo RP válido. Motivo RP válido: cenário completo de roleplay, com participação e consentimento do JOGADOR membro da corporação.','90 minutos na Prisão ou 90 minutos de Bloqueio de Ataque.',1],
+['gang','9.5.2','CLAN5.2','Taser da gangue em jogador dentro de veículo de serviço','Usar o Taser da Gangue em qualquer JOGADOR dentro de um veículo de serviço com a intenção de retirá-lo do veículo.','90 minutos na Prisão ou 30 minutos de Bloqueio de Ataque.',1],
+['gang','9.7','CLAN6','Assassinato no marcador dos QGs','Matar jogadores na entrada/saída do QG. Atirar de dentro para fora e vice-versa não é permitido.','40 minutos na cadeia do ONESTATE.'],
+['gang','9.8','CLAN7','Bloquear o marcador do QG com veículos','Bloquear os marcadores de entrada/saída do QG e os caminhos que levam a eles é proibido, inclusive com veículos.','60 minutos na cadeia do ONESTATE.'],
+['gang','9.9','CLAN8','Atividade ilegal nas áreas verdes','É proibida qualquer atividade criminal nas áreas verdes, incluindo tiroteios, assaltos e sequestros.','Prisão por 60 minutos.'],
+['gang','9.10','CLAN9','Taser em veículos de trabalho','É proibido o uso de tasers nos veículos de trabalho.','Prisão por 90 minutos.'],
+['gang','9.11','CLAN10','Abuso de moedas da gangue','É proibido usar bugs e/ou qualquer outro método desonesto para adquirir moedas da gangue.','Recolhimento dos bens adquiridos e exclusão da gangue.']
+];
+var P=[
+["1","Falsas acusações","É proibido levantar falsas acusações contra civis. Qualquer policial que algemar, atirar, soltar taser ou aprisionar qualquer cidadão sem uma acusação sólida será removido da corporação.",[],"Remoção da corporação."],
+["2","Detenção sem causa","É proibido deter ou aprisionar qualquer cidadão sem causa para isso. O policial que o fizer será removido da corporação.",[],"Remoção da corporação."],
+["3","Desrespeito","A atitude desrespeitosa com colegas e civis não é aceitável. Não seja rude, não insulte e não seja, de maneira nenhuma, intolerante.",[],"1ª repreensão."],
+["4","Uso de armamento, força e equipamento","O uso de armamentos, força física e/ou equipamento especial sem aviso prévio ou uma razão justificável dentro do roleplay é proibido. Razões justificáveis são:",["Detenção de um criminoso procurado por crimes identificados pelo sistema","Resistência à prisão","Colocar em risco a integridade física ou a vida de um policial ou de um civil","Perseguição policial"],"1ª repreensão e, em casos mais graves, remoção da corporação."],
+["5","Obediência à liderança","Não obediência às regras impostas pela liderança.",[],"1 repreensão."],
+["6","Violar regras do servidor","É proibido violar as regras do servidor.",[],"1 repreensão E punição referente à violação."],
+["7","Veículos da corporação","Usar os veículos da corporação para benefício pessoal é proibido.",[],"1 repreensão."],
+["8","Insultos à liderança","Insultos à liderança da corporação são punidos com 1 repreensão.",[],"1 repreensão."],
+["9","Passos obrigatórios ao prender alguém","Passos OBRIGATÓRIOS ao prender alguém:",["Ao prender alguém, o policial deve explicar de forma clara a razão da apreensão.","Ao abordar alguém, o policial DEVE primeiramente ordenar que o cidadão pare o que está fazendo (andando, dirigindo).","Em caso de não obediência, o uso do Taser é permitido.","Matar alguém que não oferece riscos é TERMINANTEMENTE PROIBIDO."],""],
+["10","Veículo pessoal em serviço","É proibido o uso de veículo pessoal para realizar as atividades policiais.",[],"1ª repreensão e, em caso de reincidência, expulsão."],
+["11","Repreensões","Repreensões resultam na expulsão do policial da corporação.",[],"Expulsão da corporação."]
+];
+var list=document.getElementById("list"),q=document.getElementById("q"),n=document.getElementById("n"),sec="all";
+function norm(s){return s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()}
+function esc(s){return s.replace(/[&<>]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;"}[c]})}
+function hl(t,terms){
+  if(!terms.length)return esc(t);
+  var nt=norm(t),mask=new Array(t.length).fill(false);
+  terms.forEach(function(w){var i=0;while((i=nt.indexOf(w,i))>-1){for(var k=i;k<i+w.length;k++)mask[k]=true;i+=w.length}});
+  var o="",open=false;
+  for(var i=0;i<t.length;i++){
+    if(mask[i]&&!open){o+="<mark>";open=true}
+    if(!mask[i]&&open){o+="</mark>";open=false}
+    o+=esc(t[i]);
+  }
+  return o+(open?"</mark>":"");
+}
+var AL={hacker:["hack"],cheat:["cheats","software"],cheater:["cheats"],vender:["venda"],comprar:["rmt","dinheiro real"],dox:["doxxing"],clan:["gangue"],bug:["abuse","vulnerabilidades"],ingles:["idioma"],stream:["stream","midia"],streamer:["stream","midia"],golpe:["golpistas","enganar"],golpista:["golpistas","enganar"],qg:["qg"],dm:["deathmatch"],dmauto:["deathmatch auto"],np:["poder","naorp"],nrp:["non roleplay","roleplay"],rp:["roleplay"],meta:["metagaming"],mg:["metagaming"],rk:["repeat kill"],db:["driveby"],drive:["driveby"],afk:["abandono","atividade"],cadeia:["prisao"],preso:["prisao"],presos:["prisao"],prender:["prisao","prender"],preso:["prisao"],carro:["veiculo"],carros:["veiculo"],moto:["veiculo"],veiculos:["veiculo"],ban:["banimento"],banido:["banimento"],banir:["banimento"],mute:["silenciamento"],mutado:["silenciamento"],silenciar:["silenciamento"],chat:["chat"],voz:["voz"],matar:["matar","morte","execucao"],morrer:["morte","matar"],morte:["matar"],demitido:["exoneracao","remocao","expulsao"],demissao:["exoneracao","remocao","expulsao"],exonerado:["exoneracao","remocao"],expulso:["expulsao","remocao"],removido:["remocao","exoneracao"],advertencia:["repreensao"],adv:["repreensao"],sexo:["sexual","assedio"],sexual:["assedio"],racismo:["etnico","insultos"],homofobia:["lgbtqia","insultos"],xingar:["insulto","rude"],ofender:["insulto","rude"],policia:["policial"],pm:["policial"],gov:["policial"],greenzone:["zona verde"],zv:["zona verde"],verde:["zona verde"],sequestrar:["sequestro"],raptar:["sequestro"],faccao:["faction","faccao"],faccoes:["faction","faccao"],gang:["faction","faccao"],tempo:["minutos"],pena:["penalidade"],punicao:["penalidade","punicao"],arma:["armamento"],armas:["armamento"],tiro:["atirar","armamento"],taze:["taser"],choque:["taser"],algema:["algemar"],mentira:["falsas"],mentir:["falsas"],inocente:["falsas","civis"]};
+function lev(a,b){var m=a.length,k=b.length,d=[],i,j;for(i=0;i<=m;i++){d[i]=[i]}for(j=1;j<=k;j++)d[0][j]=j;for(i=1;i<=m;i++)for(j=1;j<=k;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return d[m][k]}
+function hit(t,all,words){
+  if(all.indexOf(t)>-1)return true;
+  if(t.length<4)return false;
+  var tol=t.length>=7?2:1;
+  for(var i=0;i<words.length;i++){var w=words[i];if(Math.abs(w.length-t.length)<=tol+2&&(lev(t,w)<=tol||lev(t,w.slice(0,t.length))<=tol))return true}
+  return false;
+}
+function sel(a,k){if(sec!=="grave")return a;var ids=k?["1","2","9","4"]:["5.14","5.13","5.9.1","5.10"];return ids.map(function(i){return a.filter(function(r){return r[0]===i})[0]})}
+function rank(arr,base,txt,ttl){return arr.map(function(r,i){var t=norm(txt(r)),h=norm(ttl(r)),s=0;base.forEach(function(w){if(t.indexOf(w)>-1)s+=2;if(h.indexOf(w)>-1)s+=3});return{r:r,i:i,s:s}}).sort(function(a,b){return b.s-a.s||a.i-b.i}).map(function(x){return x.r})}
+function art(cls,head,body,pen){return '<article class="'+cls+'"><h2>'+head+'</h2>'+body+(pen?'<div class="pen"><strong>Penalidade:</strong> '+pen+'</div>':'')+'</article>'}
+function render(){
+  var base=norm(q.value).split(/\s+/).filter(Boolean),terms=[],c=0,g="",p="",tot=R.length+P.length+Q.length;
+  base.forEach(function(w){terms.push(w);(AL[w]||[]).forEach(function(a){terms.push(a)})});
+  function qs(ss){
+    if(sec!=="all"&&ss.indexOf(sec)<0)return"";
+    var out="";
+    ss.forEach(function(s){
+      var a=Q.filter(function(r){return r[0]===s&&ok(SN[s]+" "+r.slice(1,6).join(" "))});
+      if(!a.length)return;
+      c+=a.length;
+      out+='<h3>'+SN[s]+'</h3>'+(NT[s]?'<p class="note">'+NT[s]+'</p>':"")+rank(a,base,function(r){return r.slice(1,6).join(" ")},function(r){return r[2]+" "+r[3]}).map(function(r){return art(r[6]?"sub":"",hl(r[1]+(r[2]?" · "+r[2]:""),terms)+" – "+hl(r[3],terms),'<p>'+hl(r[4],terms)+'</p>',r[5]?hl(r[5],terms):"")}).join("");
+    });
+    return out;
+  }
+  function ok(s){var all=norm(s),words=all.split(/[^a-z0-9]+/).filter(Boolean);return base.every(function(w){return hit(w,all,words)||(AL[w]||[]).some(function(a){return hit(a,all,words)})})}
+  if(sec!=="pol")rank(sel(R,0),base,function(r){return r.slice(0,5).join(" ")},function(r){return r[1]+" "+r[2]}).forEach(function(r){
+    if(!ok(r.slice(0,5).join(" ")))return;
+    c++;
+    g+=art(r[5]?"sub":"",hl(r[0]+" · "+r[1],terms)+" – "+hl(r[2],terms),'<p>'+hl(r[3],terms)+'</p>',hl(r[4],terms));
+  });
+  if(sec!=="jogo")rank(sel(P,1),base,function(r){return r[1]+" "+r[2]+" "+r[3].join(" ")},function(r){return r[1]}).forEach(function(r){
+    if(!ok("policia policial "+r[0]+" "+r[1]+" "+r[2]+" "+r[3].join(" ")+" "+r[4]))return;
+    c++;
+    var body='<p>'+hl(r[2],terms)+'</p>'+(r[3].length?'<ul>'+r[3].map(function(i){return '<li>'+hl(i,terms)+'</li>'}).join("")+'</ul>':"");
+    p+=art("",hl("Polícia · "+r[0],terms)+" – "+hl(r[1],terms),body,hl(r[4],terms));
+  });
+  list.innerHTML=qs(["conta"])+(g?'<h3>Regras do jogo de Role Play (RP)</h3>'+g:"")+(p?'<h3>Regras da Polícia</h3><p class="note">Complementam as regras do jogo e não anulam a obrigatoriedade de seguir as regras gerais. Valem para todos os membros da Polícia de OneState.</p>'+p:"")+qs(["chat","abuso","midia","gang"])||'<div class="none">Nenhuma regra encontrada.</div>';
+  n.textContent=c+" de "+tot+" regras";
+}
+document.querySelectorAll(".chip").forEach(function(b){b.addEventListener("click",function(){
+  sec=b.getAttribute("data-s");
+  document.querySelectorAll(".chip").forEach(function(x){x.classList.toggle("on",x===b)});
+  render();
+})});
+q.addEventListener("input",render);
+q.addEventListener("focus",function(){q.select()});
+q.addEventListener("keydown",function(e){if(e.key==="Escape"){q.value="";render()}});
+document.addEventListener("keydown",function(e){if(e.key==="/"&&document.activeElement!==q){e.preventDefault();q.focus()}});
+var zs=[17,20,23],zi=0;
+document.getElementById("z").addEventListener("click",function(){zi=(zi+1)%3;document.body.style.fontSize=zs[zi]+"px";this.textContent=zi===2?"A−":"A+"});
+q.focus();
+document.getElementById("c").addEventListener("click",function(){q.value="";render();q.focus()});
+render();
+</script>
+</body>
+</html>
